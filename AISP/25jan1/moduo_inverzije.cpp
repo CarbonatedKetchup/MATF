@@ -17,7 +17,7 @@ int mod_inverz(vector<int> &v){
   
   return br;
 }
-  //nah fuck this ovo nije linearno, onaj kvad dole je good enough
+  //onaj kvad dole je good enough
 
 
 int main(){
