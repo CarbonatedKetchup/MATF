@@ -1,0 +1,14 @@
+begin:
+	graph x;
+	graph y={1:[1,2], 2:[3,1,4], 3:[4], 4:[]};
+	graph z = y;
+	print_matrix_d(y);
+	print_matrix_u(y);
+	graph w1 = {1:[4], 4:[10], 10:[1,4]};
+	graph w2 = w1+y;
+	w2 = w1 + {2:[1], 1:[1,2]};
+	graph w3 = w1*y;
+	graph w4 = ~w3;
+	delete w1 4;
+	w2[1];
+end

@@ -1,0 +1,68 @@
+%{
+#include <iostream>
+
+using namespace std;
+
+extern int yylex();
+
+void yyerror(string s){
+	cerr << "Sintaksna greska: " << s << endl;
+	exit(EXIT_FAILURE);
+}
+%}
+
+%token SIFRA_T ID PRINT_T LIST_T EQ NEQ GEQ LEQ FST_T SND_T SUM_T BROJ UMINUS
+
+%start program
+
+%%
+
+program: program naredba				{}
+	| naredba							{}
+	;
+naredba: SIFRA_T ID ';'					{}
+	| SIFRA_T ID '(' izraz ')' ';'		{}
+	| SIFRA_T ID '=' izraz ';'			{}
+	| PRINT_T izraz ';'					{}
+	| logicka_naredba ';'				{}
+	| LIST_T ID '=' '[' lista ']'		{}
+	;
+logicka_naredba: izraz NEQ izraz		{}
+	| izraz EQ izraz					{}
+	| izraz '>' izraz					{}
+	| izraz '<' izraz					{}
+	| izraz GEQ izraz					{}
+	| izraz LEQ izraz					{}
+	;
+izraz: izraz '+' izraz					{}
+	| izraz '-' izraz					{}
+	| izraz '*' izraz					{}
+	| izraz '/' izraz					{}
+	| '-' izraz %prec UMINUS			{}
+	| '(' izraz ')'						{}
+	| ID								{}
+	| ID '.' FST_T						{}
+	| ID '.' SND_T						{}
+	| ID '.' SUM_T '(' ')'				{}
+	| ID '[' BROJ ']'					{}
+	| '(' lista_brojeva ')'				{}
+	| BROJ								{}
+	;
+lista_brojeva: BROJ ',' BROJ			{}
+	| BROJ ',' '?'						{}
+	;
+lista: lista ',' izraz					{}
+	| izraz								{}
+	;
+
+%%
+
+int main(){
+	if(yyparse() == 0){
+		cout << "sve okej" << endl;
+	}else{
+		cout << "Sintaksna greska." << endl;
+	}
+	
+	exit(EXIT_SUCCESS);
+}

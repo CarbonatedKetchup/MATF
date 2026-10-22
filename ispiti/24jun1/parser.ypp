@@ -1,0 +1,95 @@
+%{
+#include <iostream>
+#include <set>
+#include <map>
+
+using namespace std;
+
+#include "graf.hpp"
+
+extern int yylex();
+
+void yyerror(string s){
+	cerr << "Sintaksna greska: " << s << endl;
+	exit(EXIT_FAILURE);
+}
+
+map<string, Graf*> prom;
+
+void deinit(){
+	for(auto it = prom.begin(); it != prom.end(); it++){
+		delete it->second;
+	}
+}
+%}
+
+%union{
+	int br;
+	set<int>* skup;
+	pair<int, set<int>>* par;
+	map<int, set<int>>* mapa;
+	string* ime;
+	Graf* g;
+}
+
+%left '+'
+%left '*'
+%right '~'
+
+%token BEGIN_T END_T GRAF_T PRINT_D PRINT_U DEL_T
+%token<br> BROJ
+%token<ime> ID
+
+%type<par> cvor
+%type<mapa> niz_cvorova
+%type<skup> niz_brojeva
+%type<g> izraz
+
+%start pocetak
+
+%%
+
+pocetak: BEGIN_T ':' program END_T			{}
+	;
+
+program: program naredba					{}
+	| naredba								{}
+	;
+naredba: GRAF_T ID ';'						{}
+	| GRAF_T ID '=' izraz ';'				{}
+	| PRINT_D '(' izraz ')' ';'				{}
+	| PRINT_U '(' izraz ')' ';'				{}
+	| ID '=' izraz ';'						{}
+	| DEL_T ID BROJ ';'						{}
+	| ID '[' BROJ ']' ';'					{}
+	;
+izraz: izraz '+' izraz						{}
+	| izraz '*' izraz						{}
+	| '~' izraz								{}
+	| '(' izraz ')'							{	$$ = $2;	}
+	| ID									{}
+	| '{' niz_cvorova '}'					{}
+	;
+niz_cvorova: niz_cvorova ',' cvor			{}
+	| cvor									{}
+	;
+cvor: BROJ ':' '[' niz_brojeva ']'			{	$$ = new pair<int, set<int>>($1, *$4); delete $4;	}
+	| BROJ ':' '[' ']'						{	$$ = new pair<int, set<int>>($1, set<int>);	}
+	;
+niz_brojeva: niz_brojeva ',' BROJ			{	$$ = $1; $$->insert($3);	}
+	| BROJ									{	set<int> skup = new set(); skup.insert($1); $$ = set;	}
+	;
+
+%%
+
+int main(){
+	if(yyparse() == 0){
+		cout << "sve okej" << endl;
+	}else{
+		cout << "Sintaksna greska." << endl;
+	}
+	
+	deinit();
+	
+	exit(EXIT_SUCCESS);
+}
